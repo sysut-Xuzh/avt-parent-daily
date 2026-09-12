@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>星语·AVT 项目 — 近期工作进展演示</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111c33; --card:#16223c; --line:#23314f;
+    --txt:#e6edf7; --muted:#9fb0c9; --accent:#38bdf8; --accent2:#34d399;
+    --warn:#fbbf24; --danger:#f87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(1200px 700px at 70% -10%, #1b2c4d 0%, var(--bg) 55%);
+    color:var(--txt); overflow:hidden;
+  }
+  .deck{height:100vh;display:flex;flex-direction:column}
+  .bar{height:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .35s ease}
+  .stage{flex:1;position:relative;overflow:hidden}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:6vh 9vw;animation:fade .4s ease}
+  .slide.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  h1{font-size:clamp(28px,5vw,56px);line-height:1.15;letter-spacing:1px}
+  h2{font-size:clamp(22px,3.4vw,38px);margin-bottom:18px;color:var(--accent)}
+  .sub{color:var(--muted);font-size:clamp(14px,1.6vw,18px);margin-top:14px;max-width:48ch;line-height:1.7}
+  .tag{display:inline-block;background:var(--card);border:1px solid var(--line);color:var(--accent2);
+    padding:4px 12px;border-radius:999px;font-size:13px;margin-bottom:18px}
+  .grid{display:grid;gap:18px;margin-top:26px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .card h3{font-size:17px;margin-bottom:8px;color:var(--accent)}
+  .card p{color:var(--muted);font-size:14px;line-height:1.6}
+  .ok{color:var(--accent2);font-weight:700}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:8px;margin:3px 4px 0 0}
+  .p-done{background:rgba(52,211,153,.15);color:var(--accent2);border:1px solid rgba(52,211,153,.4)}
+  .p-do{background:rgba(251,191,36,.15);color:var(--warn);border:1px solid rgba(251,191,36,.4)}
+  .p-hold{background:rgba(248,113,113,.15);color:var(--danger);border:1px solid rgba(248,113,113,.4)}
+  ul{margin:10px 0 0 18px;color:var(--muted);font-size:14px;line-height:1.75}
+  li{margin:4px 0}
+  svg{max-width:100%}
+  .nav{display:flex;align-items:center;gap:14px;padding:14px 9vw;background:var(--panel);border-top:1px solid var(--line)}
+  .nav button{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:10px;
+    padding:9px 18px;font-size:14px;cursor:pointer}
+  .nav button:hover{border-color:var(--accent)}
+  .dots{display:flex;gap:8px;margin-left:auto}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+  .dot.on{background:var(--accent)}
+  .counter{color:var(--muted);font-size:13px;min-width:64px;text-align:right}
+  .big{font-size:clamp(40px,9vw,96px);font-weight:800;color:var(--accent2);line-height:1}
+  .row{display:flex;gap:40px;align-items:center;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left}
+  th{background:var(--card);color:var(--accent)}
+  td.ok{color:var(--accent2);font-weight:700}
+  td.hold{color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="bar" id="bar"></div>
+  <div class="stage" id="stage">
+
+    <!-- 1 封面 -->
+    <section class="slide active">
+      <span class="tag">工作进展演示 · 2026-09</span>
+      <h1>星语 · AVT 项目<br/>近期工作进展</h1>
+      <p class="sub">自闭症儿童居家声线训练 · 家长端 Web 应用<br/>
+      本期聚焦：安全架构重构 · 密钥分层 · 部署上线 · 功能整合</p>
+    </section>
+
+    <!-- 2 项目定位 -->
+    <section class="slide">
+      <span class="tag">我们在做什么</span>
+      <h2>项目定位</h2>
+      <div class="row">
+        <div class="big">AVT</div>
+        <div style="max-width:46ch">
+          <p class="sub" style="margin-top:0">
+          面向<strong>自闭症（ASD）儿童家长</strong>的居家声线/言语训练助手：
+          把稀缺的治疗师干预资源，下沉到家庭日常场景，形成"任务—录音—评级—推荐"的家长端训练闭环。</p>
+        </div>
+      </div>
+      <div class="grid g4">
+        <div class="card"><h3>技术栈</h3><p>Next.js 14 (App Router) · TypeScript · Tailwind · framer-motion · Supabase</p></div>
+        <div class="card"><h3>隐私红线</h3><p>原始音频只存本地，云端仅留脱敏结构化指标</p></div>
+        <div class="card"><h3>核心角色</h3><p>家长 / 儿童 / 治疗师 三方协同</p></div>
+        <div class="card"><h3>评级体系</h3><p>任务录音 + 语音练习 双表；统一 ⭐1–5 + 分数</p></div>
+      </div>
+    </section>
+
+    <!-- 3 四大主线 -->
+    <section class="slide">
+      <span class="tag">本期四大主线</span>
+      <h2>近期完成的核心工作</h2>
+      <div class="grid g2">
+        <div class="card"><h3>① 安全架构重构</h3><p>数据库身份统一 + 行级安全(RLS)两阶段收紧，隔离验证通过。</p></div>
+        <div class="card"><h3>② 密钥与隐私分层</h3><p>前端 anon / 服务端 service_role 分离；原始音频本地化。</p></div>
+        <div class="card"><h3>③ 部署上线准备</h3><p>8 步上线清单推进，迁移、验收、配置均已落地。</p></div>
+        <div class="card"><h3>④ 功能整合验收</h3><p>双评级、声纹建档、治疗师推荐、新手引导闭环。</p></div>
+      </div>
+    </section>
+
+    <!-- 4 安全架构 -->
+    <section class="slide">
+      <span class="tag">主线 ① · 安全</span>
+      <h2>安全架构重构：身份统一 + RLS 收紧</h2>
+      <svg viewBox="0 0 720 240" width="100%">
+        <defs>
+          <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#38bdf8"/>
+          </marker>
+        </defs>
+        <rect x="20" y="80" width="150" height="80" rx="12" fill="#16223c" stroke="#23314f"/>
+        <text x="95" y="118" fill="#e6edf7" font-size="14" text-anchor="middle">浏览器(前端)</text>
+        <text x="95" y="138" fill="#9fb0c9" font-size="11" text-anchor="middle">anon key</text>
+
+        <rect x="285" y="80" width="170" height="80" rx="12" fill="#16223c" stroke="#38bdf8"/>
+        <text x="370" y="112" fill="#e6edf7" font-size="13" text-anchor="middle">Supabase</text>
+        <text x="370" y="132" fill="#34d399" font-size="11" text-anchor="middle">RLS _v2 策略</text>
+
+        <rect x="540" y="80" width="160" height="80" rx="12" fill="#16223c" stroke="#23314f"/>
+        <text x="620" y="112" fill="#e6edf7" font-size="13" text-anchor="middle">Vercel 服务端</text>
+        <text x="620" y="132" fill="#9fb0c9" font-size="11" text-anchor="middle">service_role</text>
+
+        <rect x="285" y="10" width="170" height="46" rx="10" fill="#16223c" stroke="#23314f"/>
+        <text x="370" y="38" fill="#9fb0c9" font-size="12" text-anchor="middle">本地 IndexedDB(原始音频)</text>
+
+        <line x1="170" y1="120" x2="283" y2="120" stroke="#38bdf8" stroke-width="2" marker-end="url(#a)"/>
+        <line x1="455" y1="120" x2="538" y2="120" stroke="#38bdf8" stroke-width="2" marker-end="url(#a)"/>
+        <line x1="370" y1="80" x2="370" y2="58" stroke="#9fb0c9" stroke-width="2" stroke-dasharray="4"/>
+      </svg>
+      <ul>
+        <li><strong>身份统一</strong>：触发器使 <code>users.id = auth.users.id</code>；新增 <code>users.auth_user_id</code> 关联真实登录账户。</li>
+        <li><strong>RLS 两阶段</strong>：阶段 A 新增 <code>_v2</code> 收紧策略（<code>public.my_baby_ids()</code>）；阶段 B 删除旧 <code>public_*</code> 全开放策略。</li>
+        <li><strong>验收结果</strong>：单表确认"旧策略 0 残留"，隔离核心达成；历史行回填 15 个用户已对齐。</li>
+      </ul>
+    </section>
+
+    <!-- 5 密钥隐私 -->
+    <section class="slide">
+      <span class="tag">主线 ② · 隐私</span>
+      <h2>密钥分层与三层存储</h2>
+      <div class="grid g3">
+        <div class="card"><h3>前端 (anon)</h3><p><code>NEXT_PUBLIC_SUPABASE_URL</code><br/><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code><br/>可暴露，仅受限读权限</p></div>
+        <div class="card"><h3>服务端 (secret)</h3><p><code>SUPABASE_SERVICE_ROLE_KEY</code><br/>仅 Vercel 服务端，绕过 RLS 的运维通道</p></div>
+        <div class="card"><h3>运维开关</h3><p><code>ADMIN_MAINTENANCE_ENABLED</code><br/><code>ADMIN_ALLOWED_EMAILS</code> 白名单</p></div>
+      </div>
+      <div class="grid g3" style="margin-top:18px">
+        <div class="card"><h3>原始音频</h3><p>仅存<strong>本地 IndexedDB</strong> (<code>avt_voice_recordings</code>)，永不外传</p></div>
+        <div class="card"><h3>声纹基准</h3><p>仅存 <code>localStorage</code> (<code>avt_voice_profile</code>)，不上云</p></div>
+        <div class="card"><h3>云端指标</h3><p>仅存脱敏结构化数据：星级 / 分数 / 时长 / 基频</p></div>
+      </div>
+    </section>
+
+    <!-- 6 部署 8 步 -->
+    <section class="slide">
+      <span class="tag">主线 ③ · 上线</span>
+      <h2>部署上线 8 步清单</h2>
+      <table>
+        <tr><th>#</th><th>步骤</th><th>状态</th></tr>
+        <tr><td>①</td><td>迁移 015→016→018→017→019（身份/RLS）</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>②</td><td>阶段一隔离验收（单结果表）</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>③</td><td>020 删旧全开放策略</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>④</td><td>Vercel 环境变量（service role + ADMIN_*）</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>⑤</td><td>历史行回填 auth_user_id</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>⑥</td><td>清理 __selftest__ 脏数据</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>⑦</td><td>Supabase Auth Email 回调(HTTPS)</td><td class="ok">✓ 完成</td></tr>
+        <tr><td>⑧</td><td>生产关 testMode（匿名登录演示开关）</td><td class="hold">演示期保留</td></tr>
+      </table>
+    </section>
+
+    <!-- 7 功能现状 -->
+    <section class="slide">
+      <span class="tag">主线 ④ · 功能</span>
+      <h2>功能现状总览</h2>
+      <div class="grid g3">
+        <div class="card"><h3>任务录音评级</h3><p>家长按任务录音，⭐1–5 + 分数反馈，结果卡可关闭</p></div>
+        <div class="card"><h3>语音练习</h3><p>独立 daily 模式，双表 (task/practice) 统一星级</p></div>
+        <div class="card"><h3>声纹建档</h3><p>首次引导建档至 localStorage，基准不外流</p></div>
+        <div class="card"><h3>治疗师推荐</h3><p>内容 Tab 可滚动标签，窄屏可达</p></div>
+        <div class="card"><h3>新手引导</h3><p>8 步浮层 + /parent/guide 可重演，设置页入口</p></div>
+        <div class="card"><h3>学习跳转</h3><p>内容详情「去练习」直达 voice-lab daily</p></div>
+      </div>
+    </section>
+
+    <!-- 8 数据隔离 -->
+    <section class="slide">
+      <span class="tag">安全细节 · 演示数据</span>
+      <h2>数据隔离：演示数据 ≠ 真实用户</h2>
+      <div class="row">
+        <div class="big">0</div>
+        <div style="max-width:50ch">
+          <p class="sub" style="margin-top:0">清理脚本仅匹配 <code>auth_user_id IS NULL</code> 的孤儿/种子用户，
+          <strong>真实注册用户永远带着 auth 身份，物理隔离、绝不被波及</strong>。</p>
+        </div>
+      </div>
+      <div class="grid g3" style="margin-top:20px">
+        <div class="card"><h3>当前演示数据</h3><p>12 孤儿用户 + 4 孩子，已归档备份 <code>_archive_seed_*</code>，可回滚</p></div>
+        <div class="card"><h3>清理命令</h3><p><code>DELETE FROM users WHERE auth_user_id IS NULL</code></p></div>
+        <div class="card"><h3>上线前动作</h3><p>一键清理演示数据，真实用户零影响后再关 testMode</p></div>
+      </div>
+    </section>
+
+    <!-- 9 进度与下一步 -->
+    <section class="slide">
+      <span class="tag">收尾</span>
+      <h2>当前进度 & 下一步</h2>
+      <div class="row" style="align-items:flex-start">
+        <div style="flex:1">
+          <p class="ok" style="font-size:18px">✓ 安全核心已达成，可演示</p>
+          <ul>
+            <li>类型检查 <code>tsc --noEmit</code> 通过（0 错误）</li>
+            <li>RLS 隔离验收通过，密钥分层落地</li>
+            <li>8 步上线清单 7/8 完成</li>
+          </ul>
+        </div>
+        <div style="flex:1">
+          <p class="sub" style="margin-top:0;color:var(--warn)">待办（上线前）</p>
+          <ul>
+            <li>⑧ 关 testMode（短信 OTP 配好后）</li>
+            <li>清理演示数据（备份可回滚）</li>
+            <li>（可选）语音识别(ASR)原型深化</li>
+            <li>（可选）next build 生产构建验证</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="nav">
+    <button onclick="go(-1)">← 上一页</button>
+    <button onclick="go(1)">下一页 →</button>
+    <div class="dots" id="dots"></div>
+    <div class="counter" id="counter">1 / 9</div>
+  </div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const total=slides.length; let cur=0;
+  const dots=document.getElementById('dots');
+  slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' on':'');dots.appendChild(d);});
+  function render(){
+    slides.forEach((s,i)=>s.classList.toggle('active',i===cur));
+    [...dots.children].forEach((d,i)=>d.classList.toggle('on',i===cur));
+    document.getElementById('counter').textContent=(cur+1)+' / '+total;
+    document.getElementById('bar').style.width=((cur+1)/total*100)+'%';
+  }
+  function go(d){cur=Math.max(0,Math.min(total-1,cur+d));render();}
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+  render();
+</script>
+</body>
+</html>

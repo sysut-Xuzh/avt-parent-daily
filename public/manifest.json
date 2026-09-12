@@ -1,0 +1,40 @@
+{
+  "name": "AVT 听损儿童康复训练",
+  "short_name": "AVT训练",
+  "description": "听损儿童AVT康复训练 — AI多模态每日训练助手",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "categories": ["medical", "education", "parenting"],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "AVT 康复训练平台首页"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

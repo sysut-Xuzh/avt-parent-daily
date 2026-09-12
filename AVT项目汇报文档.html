@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVT 听觉口语疗法家庭康复训练平台 — 项目汇报</title>
+<style>
+  @page { size: A4; margin: 2cm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #f5f5f5;
+    color: #1a1a2e;
+    line-height: 1.8;
+    padding: 40px 20px;
+  }
+  .container { max-width: 820px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 20px rgba(0,0,0,0.08); }
+
+  /* 封面 */
+  .cover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 60px 50px;
+    color: #fff;
+    text-align: center;
+  }
+  .cover .logo { font-size: 64px; margin-bottom: 16px; }
+  .cover h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; }
+  .cover .subtitle { font-size: 16px; opacity: 0.9; margin-bottom: 24px; }
+  .cover .meta { font-size: 13px; opacity: 0.75; }
+  .cover .divider { width: 60px; height: 3px; background: rgba(255,255,255,0.5); margin: 20px auto; border-radius: 2px; }
+
+  /* 正文 */
+  .content { padding: 40px 50px; }
+  .content h2 {
+    font-size: 20px; color: #4a3f6b; margin: 36px 0 16px; padding-bottom: 8px;
+    border-bottom: 2px solid #e8e3f0; display: flex; align-items: center; gap: 8px;
+  }
+  .content h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: #667eea; color: #fff; border-radius: 50%;
+    font-size: 14px; font-weight: 700;
+  }
+  .content h3 { font-size: 16px; color: #555; margin: 20px 0 10px; }
+  .content p { font-size: 14px; color: #333; margin-bottom: 10px; }
+  .content ul { margin: 8px 0 16px 20px; }
+  .content li { font-size: 14px; color: #444; margin-bottom: 6px; }
+
+  /* 重点框 */
+  .highlight-box {
+    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+    border-left: 4px solid #667eea;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .highlight-box.accent {
+    background: linear-gradient(135deg, #f0fff4 0%, #f0fdfa 100%);
+    border-left-color: #10b981;
+  }
+  .highlight-box.warm {
+    background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+    border-left-color: #f59e0b;
+  }
+  .highlight-box h3 { color: #4a3f6b; margin-top: 0; }
+  .highlight-box.accent h3 { color: #065f46; }
+  .highlight-box.warm h3 { color: #92400e; }
+
+  /* 表格 */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #f3f0fa; color: #4a3f6b; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #d4cbe6; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; color: #444; }
+  tr:hover td { background: #faf9fc; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+  .tag-green { background: #d1fae5; color: #065f46; }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+  .tag-orange { background: #fef3c7; color: #92400e; }
+  .tag-pink { background: #fce7f3; color: #9d174d; }
+
+  /* 卡片网格 */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .mini-card {
+    background: #f8f7fc; border-radius: 10px; padding: 16px; border: 1px solid #ece8f5;
+  }
+  .mini-card .icon { font-size: 24px; margin-bottom: 8px; }
+  .mini-card .title { font-size: 14px; font-weight: 600; color: #4a3f6b; margin-bottom: 4px; }
+  .mini-card .desc { font-size: 12px; color: #777; }
+
+  /* 流程图 */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+  .flow-step {
+    background: #667eea; color: #fff; padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+  }
+  .flow-step.alt { background: #10b981; }
+  .flow-step.warm { background: #f59e0b; }
+  .flow-arrow { color: #bbb; font-size: 18px; }
+
+  /* 页脚 */
+  .footer { padding: 24px 50px; background: #f8f7fc; text-align: center; font-size: 12px; color: #999; }
+
+  /* 技术栈标签 */
+  .tech-stack { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .tech-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 500; border: 1px solid #ddd;
+    background: #fff; color: #555;
+  }
+
+  .stat-row { display: flex; gap: 16px; margin: 16px 0; }
+  .stat-box {
+    flex: 1; text-align: center; background: #f8f7fc; border-radius: 10px; padding: 16px;
+    border: 1px solid #ece8f5;
+  }
+  .stat-box .num-big { font-size: 28px; font-weight: 700; color: #667eea; }
+  .stat-box .label { font-size: 12px; color: #888; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="logo">🐰</div>
+    <h1>AVT 听觉口语疗法<br>家庭康复训练平台</h1>
+    <div class="divider"></div>
+    <div class="subtitle">项目功能汇报文档</div>
+    <div class="meta">汇报日期：2026 年 8 月 7 日　|　项目版本：v1.0</div>
+  </div>
+
+  <div class="content">
+
+    <!-- 一、项目概述 -->
+    <h2><span class="num">1</span>项目概述</h2>
+    <p>AVT（Auditory-Verbal Therapy，听觉口语疗法）家庭康复训练平台，是一款面向听障儿童家庭的数字化康复辅助工具。平台基于 AG Bell Academy 国际标准，将专业治疗师的训练方案转化为家长可在日常生活中执行的微任务，通过 <strong>卡通动画示范 + 自然语音引导 + 成长日历追踪</strong> 三位一体的方式，帮助听障宝宝在家庭场景中持续进行听觉口语康复训练。</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="num-big">4</div>
+        <div class="label">已制作动画</div>
+      </div>
+      <div class="stat-box">
+        <div class="num-big">32</div>
+        <div class="label">AVT 标准任务</div>
+      </div>
+      <div class="stat-box">
+        <div class="num-big">17</div>
+        <div class="label">API 接口</div>
+      </div>
+      <div class="stat-box">
+        <div class="num-big">14</div>
+        <div class="label">数据库表</div>
+      </div>
+    </div>
+
+    <!-- 二、技术架构 -->
+    <h2><span class="num">2</span>技术架构</h2>
+    <div class="tech-stack">
+      <span class="tech-badge">Next.js 14 (App Router)</span>
+      <span class="tech-badge">React 18 + TypeScript</span>
+      <span class="tech-badge">Tailwind CSS</span>
+      <span class="tech-badge">Framer Motion</span>
+      <span class="tech-badge">Supabase (PostgreSQL)</span>
+      <span class="tech-badge">DeepSeek LLM</span>
+      <span class="tech-badge">web-push (VAPID)</span>
+      <span class="tech-badge">XState 状态机</span>
+      <span class="tech-badge">Recharts 图表</span>
+      <span class="tech-badge">PWA (Service Worker)</span>
+    </div>
+
+    <table>
+      <tr><th width="120">层级</th><th>技术选型</th><th>说明</th></tr>
+      <tr><td>前端框架</td><td>Next.js 14.2 + React 18 + TypeScript 5.4</td><td>App Router 模式，SSR + 静态导出</td></tr>
+      <tr><td>UI / 动画</td><td>Tailwind CSS 3.4 + Framer Motion 11</td><td>响应式布局，流畅过渡动画</td></tr>
+      <tr><td>数据库</td><td>Supabase (PostgreSQL) + RLS</td><td>14 张表，行级安全，触发器自动计算</td></tr>
+      <tr><td>AI 引擎</td><td>DeepSeek API (OpenAI 兼容)</td><td>任务生成、日报/周报智能文案</td></tr>
+      <tr><td>推送通知</td><td>web-push + Service Worker + VAPID</td><td>JITAI 智能推送，免打扰规则</td></tr>
+      <tr><td>PWA</td><td>manifest.json + sw.js</td><td>离线缓存、可安装、推送通知</td></tr>
+    </table>
+
+    <!-- 三、核心功能：动画示范 -->
+    <h2><span class="num">3</span>核心功能一：卡通动画示范</h2>
+    <p>这是本次项目的重点创新功能。针对听障儿童家长"不知道怎么引导"的核心痛点，平台为每条训练任务配备了 <strong>2D 平面卡通动画 + 自然母亲语音引导</strong>，让家长一看就懂、一学就会。</p>
+
+    <div class="highlight-box">
+      <h3>🎬 动画播放机制</h3>
+      <p><strong>触发方式：</strong>每个任务卡片上有绿色播放按钮 ▶️，点击弹出全屏动画弹窗。</p>
+      <p><strong>媒体自适应：</strong>自动检测 URL 后缀，MP4 视频用 <code>&lt;video&gt;</code> 自动播放（静音+循环），PNG 图片做 Ken Burns 缩放效果。</p>
+      <p><strong>分步引导：</strong>底部逐步显示训练步骤（每 2.5 秒推进一步），带编号圆点和进度指示。</p>
+    </div>
+
+    <div class="highlight-box accent">
+      <h3>🔊 自然语音引导（双通道回退）</h3>
+      <p><strong>第一优先级：</strong>预生成的自然母亲语音 MP3（使用 edge-tts 神经网络 TTS，zh-CN-XiaoxiaoNeural 声音，语速 -15%，音调 +8Hz），声音温暖自然，贴近真实母亲说话。</p>
+      <p><strong>回退方案：</strong>MP3 加载失败时自动切换到浏览器 Web Speech API（中文女性声音，语速 0.75，音调 1.15）。</p>
+      <p><strong>文字同步：</strong>说话时顶部显示半透明文字横幅，不遮挡画面。</p>
+      <p><strong>交互控制：</strong>支持语音开关、重播（同步重置视频+语音+步骤）。</p>
+    </div>
+
+    <h3>已制作动画清单</h3>
+    <table>
+      <tr><th width="50">序号</th><th>AVT 策略</th><th>目标词</th><th>场景</th><th>引导语</th><th>文件</th></tr>
+      <tr>
+        <td>1</td>
+        <td><span class="tag tag-blue">命名等待</span></td>
+        <td>苹果</td><td>早餐</td>
+        <td>"苹果"</td>
+        <td>mingming-dengdai-pingguo.mp4</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="tag tag-purple">听觉轰炸</span></td>
+        <td>狗</td><td>户外</td>
+        <td>"汪汪，汪汪，汪汪"</td>
+        <td>tingjue-hongzha-gou.mp4</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><span class="tag tag-green">听觉先行</span></td>
+        <td>水</td><td>洗澡</td>
+        <td>"洗头发，搓搓搓，水哗啦啦"</td>
+        <td>tingjue-xianxing-shui.mp4</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><span class="tag tag-orange">平行说话</span></td>
+        <td>晚安</td><td>睡前</td>
+        <td>"月亮在天上，星星眨眼睛"</td>
+        <td>pingxing-shuohua-wanan.mp4</td>
+      </tr>
+    </table>
+
+    <div class="flow">
+      <span class="flow-step">ImageGen 生成插画</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step alt">VideoGen 图生视频</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step warm">edge-tts 生成语音</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">集成到任务卡片</span>
+    </div>
+
+    <!-- 四、核心功能：成长日历 -->
+    <h2><span class="num">4</span>核心功能二：成长日历</h2>
+    <p>成长日历是家长端的可视化追踪核心，让家长一目了然地看到宝宝的康复训练历史和进步轨迹。</p>
+
+    <div class="highlight-box">
+      <h3>📅 月历视图</h3>
+      <p>以周一为起始的 7 列网格，支持月份前后切换。每个日期用马卡龙色系 + emoji 标记四种状态：</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card">
+        <div class="icon">🎙️</div>
+        <div class="title" style="color:#e11d48;">有录音记录</div>
+        <div class="desc">玫瑰色标记，当天有上传过训练录音</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">📝</div>
+        <div class="title" style="color:#0284c7;">有反馈笔记</div>
+        <div class="desc">天蓝色标记，家长填写了情绪/笔记</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">✅</div>
+        <div class="title" style="color:#059669;">全部完成</div>
+        <div class="desc">翡翠色标记，当天任务全部完成</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">⏳</div>
+        <div class="title" style="color:#7c3aed;">部分完成</div>
+        <div class="desc">淡紫色标记，当天部分任务已完成</div>
+      </div>
+    </div>
+
+    <div class="highlight-box accent">
+      <h3>📋 日期详情弹窗</h3>
+      <p>点击任意日期，弹出浮屏卡片，展示当日完整训练记录：</p>
+      <ul>
+        <li><strong>SVG 进度环</strong> — 动画填充完成率百分比</li>
+        <li><strong>任务列表</strong> — 每条任务的状态 emoji（✅已完成 / ⏳待办）</li>
+        <li><strong>录音播放器</strong> — 内嵌 <code>&lt;audio&gt;</code> 控件，可直接回听当日录音</li>
+        <li><strong>情绪/笔记</strong> — 显示家长当日填写的情绪标签和文字记录</li>
+      </ul>
+    </div>
+
+    <p><strong>数据来源：</strong>并行请求 3 个 API — 月度汇总（<code>/api/calendar</code>）、日志详情（<code>/api/logs</code>）、录音列表（<code>/api/recordings/list</code>），保证日历数据实时同步。</p>
+
+    <!-- 五、其他功能 -->
+    <h2><span class="num">5</span>其他已实现功能</h2>
+
+    <div class="card-grid">
+      <div class="mini-card">
+        <div class="icon">🎤</div>
+        <div class="title">录音反馈系统</div>
+        <div class="desc">MediaRecorder 录音 → 上传服务端 → 数据库记录 → 日历回听，支持情绪标签和文字笔记</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">🔔</div>
+        <div class="title">智能推送通知</div>
+        <div class="desc">JITAI 规则引擎，任务前 10 分钟自动推送，夜间/午休免打扰，连续跳过自动冷却</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">🤖</div>
+        <div class="title">AI 任务生成</div>
+        <div class="desc">DeepSeek LLM 根据目标词和策略智能生成每日训练任务，含话术和场景建议</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">📊</div>
+        <div class="title">治疗师数据面板</div>
+        <div class="desc">执行率折线图、策略分布柱状图、目标词热力图、异常预警、徽章墙</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">🔥</div>
+        <div class="title">连续打卡</div>
+        <div class="desc">数据库自动计算连续打卡天数，进度条动画展示</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">📈</div>
+        <div class="title">词汇掌握度追踪</div>
+        <div class="desc">AVT 五阶段自动升级（检测→关联→模仿→理解→表达），每完成 5/10/20/30 次升阶</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">📱</div>
+        <div class="title">PWA 离线支持</div>
+        <div class="desc">Service Worker 预缓存，断网可操作，联网自动同步离线队列</div>
+      </div>
+      <div class="mini-card">
+        <div class="icon">📚</div>
+        <div class="title">32 条标准任务库</div>
+        <div class="desc">基于 AVT 国际规范，覆盖 5 大策略类别，每条配有家长引导语</div>
+      </div>
+    </div>
+
+    <!-- 六、页面与路由 -->
+    <h2><span class="num">6</span>页面与路由总览</h2>
+    <table>
+      <tr><th width="100">路由</th><th>页面</th><th>核心功能</th></tr>
+      <tr><td>/</td><td>落地页</td><td>角色选择（家长端 / 治疗师端入口）</td></tr>
+      <tr><td>/parent</td><td>家长主页</td><td>今日任务清单、动画播放、录音、成长日历、进度追踪</td></tr>
+      <tr><td>/parent/settings</td><td>家长设置</td><td>宝宝信息、作息时间表、推送通知配置</td></tr>
+      <tr><td>/therapist</td><td>治疗师工作台</td><td>方案配置、AI 任务生成、数据面板分析</td></tr>
+    </table>
+
+    <!-- 七、数据库设计 -->
+    <h2><span class="num">7</span>数据库设计（14 张表）</h2>
+    <table>
+      <tr><th>表名</th><th>用途</th><th>关键特性</th></tr>
+      <tr><td>users</td><td>用户表</td><td>parent / therapist / admin 三种角色</td></tr>
+      <tr><td>babies</td><td>宝宝信息</td><td>含 AVT 五阶段标记</td></tr>
+      <tr><td>weekly_plans</td><td>周计划</td><td>目标词、策略、场景数组</td></tr>
+      <tr><td>daily_plans</td><td>日计划</td><td>AI/治疗师生成，含原始响应</td></tr>
+      <tr><td>tasks</td><td>每日任务</td><td><strong>含 animation_url / speech_text / audio_url</strong></td></tr>
+      <tr><td>task_logs</td><td>执行日志</td><td>情绪、笔记、录音标记</td></tr>
+      <tr><td>audio_recordings</td><td>录音记录</td><td>含 ASR 转写和发音评分字段</td></tr>
+      <tr><td>word_mastery</td><td>词汇掌握度</td><td>触发器自动升阶</td></tr>
+      <tr><td>skip_tracking</td><td>跳过追踪</td><td>自动冷却期机制</td></tr>
+      <tr><td>push_subscriptions</td><td>推送订阅</td><td>endpoint + 加密密钥</td></tr>
+      <tr><td>push_logs</td><td>推送日志</td><td>送达/查看/点击追踪</td></tr>
+      <tr><td>reports</td><td>周报告</td><td>AI 生成总结和建议</td></tr>
+      <tr><td>settings</td><td>用户偏好</td><td>免打扰、推送配置、主题</td></tr>
+      <tr><td>family_therapists</td><td>家庭-治疗师关联</td><td>多对多关系</td></tr>
+    </table>
+
+    <!-- 八、下一步规划 -->
+    <h2><span class="num">8</span>下一步规划</h2>
+    <div class="highlight-box warm">
+      <h3>🚀 近期目标</h3>
+      <ul>
+        <li><strong>扩展动画库</strong> — 从当前 4 条扩展到 32 条全覆盖，为每条 AVT 标准任务制作配套动画</li>
+        <li><strong>语音个性化</strong> — 支持家长录制自己的声音作为引导语音</li>
+        <li><strong>ASR 语音识别</strong> — 对录音进行自动转写和发音评分，辅助治疗师评估</li>
+        <li><strong>多宝宝支持</strong> — 一个家庭账号管理多个宝宝的训练计划</li>
+      </ul>
+    </div>
+    <div class="highlight-box">
+      <h3>🔮 中期愿景</h3>
+      <ul>
+        <li><strong>治疗师远程审核</strong> — 治疗师可在线查看家长录音和反馈，远程调整方案</li>
+        <li><strong>自适应推荐</strong> — 根据词汇掌握度和完成率，AI 自动推荐下一步训练重点</li>
+        <li><strong>社区互助</strong> — 家长间经验分享和互助社区</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    AVT 听觉口语疗法家庭康复训练平台　|　项目汇报文档　|　2026 年 8 月
+  </div>
+</div>
+</body>
+</html>

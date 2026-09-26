@@ -26,7 +26,11 @@ export async function GET(request: NextRequest) {
     if (filteredBabyId) plansUrl += `&baby_id=eq.${filteredBabyId}`;
     const plans = await fetch(plansUrl, { cache: "no-store", headers: headers()  }).then(r => r.json());
 
-    const babies = await fetch(`${SUPA_URL}/rest/v1/babies?select=id,name`, { cache: "no-store", headers: headers() }).then(r => r.json());
+    // 选中具体孩子时，只对投该孩子做异常检测（防止遍历全库、跨家庭泄漏）
+    const babiesUrl = filteredBabyId
+      ? `${SUPA_URL}/rest/v1/babies?select=id,name&id=eq.${filteredBabyId}`
+      : `${SUPA_URL}/rest/v1/babies?select=id,name`;
+    const babies = await fetch(babiesUrl, { cache: "no-store", headers: headers() }).then(r => r.json());
 
     let allTasks: any[] = [];
     for (const p of (plans || []).slice(0, 20)) {

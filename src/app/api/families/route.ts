@@ -193,9 +193,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/families — 查询当前用户的家庭
+// GET /api/families — 查询当前用户的家庭 / 治疗师负责的孩子
 export async function GET(request: NextRequest) {
   try {
+    const action = request.nextUrl.searchParams.get("action");
+    if (action === "my-babies") {
+      return await getMyBabies(request);
+    }
+
     const supabase = getAuthedClient(request);
     const {
       data: { user },
@@ -222,6 +227,37 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ families: families || [] });
   } catch (err) {
     console.error("[API] /api/families GET 错误:", err);
+    return NextResponse.json({ error: "服务器错误" }, { status: 500 });
+  }
+}
+
+// GET /api/families?action=my-babies
+// 治疗师 / 家庭成员可见的"负责孩子"列表。
+// 关键点：用带 JWT 的 authed 客户端查询，RLS（babies_therapist / babies_family_member）
+// 已按 auth.uid() 隔离，只会返回当前用户通过 family_therapists / family_members 关联的宝宝，
+// 不会泄漏其他家庭的宝宝。
+async function getMyBabies(request: NextRequest) {
+  try {
+    const supabase = getAuthedClient(request);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "未登录" }, { status: 401 });
+    }
+
+    const { data: babies, error } = await supabase
+      .from("babies")
+      .select("id, name")
+      .order("name");
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ babies: babies || [] });
+  } catch (err) {
+    console.error("[API] /api/families my-babies 错误:", err);
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
   }
 }

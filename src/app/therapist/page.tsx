@@ -31,14 +31,18 @@ export default function TherapistPage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
-  const [familyCode, setFamilyCode] = useState("");
   const [familyMsg, setFamilyMsg] = useState("");
+  const [joinCode, setJoinCode] = useState("");
+  const [showJoin, setShowJoin] = useState(false);
 
-  // 创建/显示家庭码
-  const handleFamilyCode = async () => {
+  // 治疗师凭码加入家庭（新模型：家长创建家庭码并发送，治疗师在此加入）
+  const handleJoinFamily = async () => {
     setFamilyMsg("");
+    if (!joinCode.trim()) {
+      setFamilyMsg("请输入家长给你的家庭码");
+      return;
+    }
     try {
-      // 从 Supabase session 取 token
       const supabase = (await import("@/lib/supabase")).getSupabaseBrowser();
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
@@ -48,34 +52,43 @@ export default function TherapistPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ action: "create", babyName: babyName || "小宝" }),
+        body: JSON.stringify({ action: "join", code: joinCode.trim().toUpperCase(), role: "therapist" }),
       });
       const data2 = await res.json();
-      if (data2.success && data2.family) {
-        setFamilyCode(data2.family.code);
-        setFamilyMsg(`家庭码已创建，发给家长即可加入`);
+      if (data2.success) {
+        setFamilyMsg("✅ 已加入家庭，正在刷新负责的孩子列表…");
+        setJoinCode("");
+        setShowJoin(false);
+        // 重新拉取治疗师负责的孩子
+        window.location.reload();
       } else {
-        setFamilyMsg(data2.error || "创建失败（需先登录）");
+        setFamilyMsg(data2.error || "加入失败（请确认家庭码正确）");
       }
     } catch {
-      setFamilyMsg("创建失败");
+      setFamilyMsg("加入失败，请稍后重试");
     }
   };
 
-  // 加载宝宝列表，默认选中小宝
+  // 加载治疗师负责的孩子（按 family_therapists 关联，仅返回自己负责的家庭）
   useEffect(() => {
-    fetch("/api/babies")
-      .then(r => r.json())
-      .then(d => {
+    (async () => {
+      try {
+        const supabase = (await import("@/lib/supabase")).getSupabaseBrowser();
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const res = await fetch("/api/families?action=my-babies", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const d = await res.json();
         if (d?.babies && d.babies.length > 0) {
           setBabyList(d.babies);
-          const defaultBaby = d.babies.find((b: { name: string }) => b.name === "小宝") || d.babies[0];
+          const defaultBaby = d.babies[0];
           setBabyId(defaultBaby.id);
           setBabyName(defaultBaby.name);
           loadPlan(defaultBaby.id, defaultBaby.name);
         }
-      })
-      .catch(() => {});
+      } catch {}
+    })();
   }, []);
 
   // 加载当前方案（基于今天日计划的任务）
@@ -175,11 +188,19 @@ export default function TherapistPage() {
             <h1 className="text-base font-bold text-gray-800">治疗师工作台</h1>
             <p className="text-xs text-gray-400">陈治疗师</p>
           </div>
-          <button onClick={handleFamilyCode}
+          <button onClick={() => setShowJoin((v) => !v)}
             className="ml-auto shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200"
-            title="创建家庭码，发给家长加入">
-            🏠 家庭码{familyCode ? `：${familyCode}` : ""}
+            title="输入家长给你的家庭码，加入其家庭">
+            ➕ 加入家庭
           </button>
+          {showJoin && (
+            <div className="absolute top-[5rem] right-4 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-2 shadow-sm z-20">
+              <input value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="家庭码 AVT-XXXX" className="px-2 py-1 rounded border border-amber-200 text-xs w-32 focus:outline-none focus:ring-1 focus:ring-amber-300" />
+              <button onClick={handleJoinFamily}
+                className="px-2 py-1 rounded bg-amber-500 text-white text-xs font-medium hover:bg-amber-600">加入</button>
+            </div>
+          )}
         </div>
         {/* 标签栏：窄屏可横向滚动，确保「推荐内容」等入口不被挤出 */}
         <div className="mt-2 -mx-4 px-4 overflow-x-auto">

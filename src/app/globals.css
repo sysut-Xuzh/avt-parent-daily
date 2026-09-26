@@ -30,9 +30,10 @@
     @apply border-gray-200;
   }
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    @apply text-[hsl(var(--foreground))];
+    background-color: #faf6f0; /* Focus Traveller 奶油画布 */
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "PingFang SC", "Noto Sans SC", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -50,4 +51,191 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+/* =====================================================================
+   Focus Traveller 视觉系统（阶段五 E）
+   旅途质感：纸纹理 / 圆润标题 / 日·暮·夜场景渐变
+   ===================================================================== */
+
+/* 旅途标题字 */
+.font-display {
+  font-family: "Baloo 2", "M PLUS Rounded 1c", "PingFang SC", "Noto Sans SC",
+    ui-rounded, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+/* 纸纹背景：细网格 + 纸纤维噪点（纯 CSS，无图片依赖） */
+.ft-paper {
+  background-color: #fbf7f0;
+  background-image:
+    radial-gradient(rgba(139, 111, 71, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(139, 111, 71, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 111, 71, 0.03) 1px, transparent 1px);
+  background-size:
+    22px 22px,
+    88px 88px,
+    88px 88px;
+}
+
+/* 页面晨雾底 */
+.ft-mist {
+  background-color: #f5efe6;
+  background-image: linear-gradient(180deg, #f7f1e8 0%, #f5efe6 60%, #f1e8da 100%);
+}
+
+/* 场景渐变：白天（晨雾 → 天青） */
+.ft-scene-day {
+  background: linear-gradient(180deg, #dcebf5 0%, #eef3e9 55%, #f7f1e4 100%);
+}
+
+/* 场景渐变：午后暖阳 */
+.ft-scene-warm {
+  background: linear-gradient(180deg, #f2e2c4 0%, #f7ecd7 55%, #fbF7F0 100%);
+}
+
+/* 场景渐变：黄昏（夕橙） */
+.ft-scene-dusk {
+  background: linear-gradient(180deg, #e8a87c 0%, #eec39a 45%, #f5e3c8 100%);
+}
+
+/* 场景渐变：夜晚（深蓝星夜） */
+.ft-scene-night {
+  background: linear-gradient(180deg, #24344a 0%, #2e4057 60%, #3b5373 100%);
+}
+
+/* 尊重系统减弱动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .ft-bob {
+    animation: none !important;
+  }
+}
+
+/* 旅人轻浮动（营火/旅伴） */
+@keyframes ft-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.ft-bob {
+  animation: ft-bob 1.6s ease-in-out infinite;
+}
+
+/* 营火微光闪烁 */
+@keyframes ft-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+.ft-flicker {
+  animation: ft-flicker 1.1s ease-in-out infinite;
+}
+
+/* =====================================================================
+   Focus Traveller 升级方案 · 组件类（阶段五 E · 验证片）
+   蓝主色 #4A90B6 / 珊瑚强调 #E8956A / 奶油底 #FAF6F0 / 暖棕线 #E8E0D4
+   ===================================================================== */
+
+/* 手写体装饰（鼓励语 / 评分反馈） */
+.font-hand {
+  font-family: "Caveat", "Xingkai SC", "STXingkai", "Segoe Script", cursive;
+}
+
+/* 卡片：白底 · 20px 圆角 · 弥散阴影 · 温暖细边 */
+.ft-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(74, 144, 182, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e8e0d4;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ft-card:active {
+  transform: scale(0.98);
+}
+
+/* 主按钮：蓝色渐变胶囊 + 阴影 */
+.ft-btn-primary {
+  background: linear-gradient(135deg, #4a90b6 0%, #3a7ca5 100%);
+  color: #ffffff;
+  border-radius: 24px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(74, 144, 182, 0.25);
+  border: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.ft-btn-primary:hover {
+  filter: brightness(1.03);
+}
+.ft-btn-primary:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(74, 144, 182, 0.2);
+}
+
+/* 次级按钮：白底蓝描边胶囊 */
+.ft-btn-secondary {
+  background: #ffffff;
+  color: #4a90b6;
+  border-radius: 24px;
+  font-weight: 600;
+  border: 2px solid #4a90b6;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.ft-btn-secondary:active {
+  transform: scale(0.96);
+  background: #e8f1f8;
+}
+
+/* 悬浮胶囊导航（复刻 Focus Traveller 标志性元素） */
+.ft-capsule-nav {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  height: 64px;
+  background: linear-gradient(135deg, #4a90b6 0%, #3a7ca5 100%);
+  border-radius: 32px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(74, 144, 182, 0.3);
+  padding: 0 12px;
+  z-index: 100;
+}
+
+/* 录音按钮：珊瑚渐变大圆 + 脉冲光环 */
+@keyframes ft-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(232, 149, 106, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(232, 149, 106, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 149, 106, 0);
+  }
+}
+.ft-pulse-ring {
+  animation: ft-pulse-ring 1.6s ease-out infinite;
+}
+
+/* 手绘风插画徽章底（48px 圆形，柔和暖棕偏色阴影） */
+.ft-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.18);
+  flex-shrink: 0;
 }

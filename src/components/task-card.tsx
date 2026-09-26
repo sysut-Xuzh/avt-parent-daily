@@ -79,42 +79,44 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: index * 0.1 }}
         whileHover={!isCompleted ? { scale: 1.01 } : undefined}
-        className={`relative mx-4 md:mx-0 rounded-xl shadow-sm border overflow-hidden ${
-          isCompleted ? "bg-gray-50 border-gray-200" : "bg-white border-gray-100"
+        className={`relative mx-4 md:mx-0 overflow-hidden ft-card ${
+          isCompleted ? "opacity-95" : ""
         }`}
       >
         {!isCompleted && (
           <motion.div
             initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`h-1.5 rounded-t-xl origin-left ${config.color.replace("bg-", "bg-").replace("-50", "-400")}`}
+            className="h-1.5 origin-left bg-ft-coral"
           />
         )}
 
-        <div className="p-4 space-y-2">
-          {/* 行1：图标 + 头部信息 */}
-          <motion.div custom={1} variants={item} initial="hidden" animate="show" className="flex items-center gap-2">
+        <div className="p-4 space-y-2.5">
+          {/* 行1：手绘风图标徽章 + 头部信息 */}
+          <motion.div custom={1} variants={item} initial="hidden" animate="show" className="flex items-center gap-3">
             <motion.div
               animate={isCompleted ? undefined : sceneAnimation[task.sceneIcon]?.animate}
               transition={isCompleted ? undefined : sceneAnimation[task.sceneIcon]?.transition}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${isCompleted ? "bg-gray-200" : getSceneColor(task.sceneIcon)}`}
+              className={`ft-badge ${isCompleted ? "bg-gray-200" : getSceneBadge(task.sceneIcon)}`}
             >
-              {task.sceneIcon}
+              <span className="text-xl leading-none">{task.sceneIcon}</span>
             </motion.div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">{task.time}</span>
+                <span className="text-xs text-ft-inkSoft">{task.time}</span>
                 {!isCompleted && (
                   <motion.span
                     animate={characterAnimation[config.character]?.animate}
                     transition={characterAnimation[config.character]?.transition}
-                    className="text-sm" title={config.characterName}
+                    className="text-base" title={config.characterName}
                   >
                     {config.character}
                   </motion.span>
                 )}
               </div>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isCompleted ? "bg-gray-200 text-gray-500" : config.badgeColor}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                isCompleted ? "bg-gray-100 text-gray-400" : "bg-ft-blueLight text-ft-blue"
+              }`}>
                 {task.scene}·{config.label}
               </span>
             </div>
@@ -122,15 +124,15 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
 
           {/* 行2：目标词 */}
           <motion.div custom={2} variants={item} initial="hidden" animate="show">
-            <span className={`inline-flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-md ${
-              isCompleted ? "bg-amber-100 text-amber-400 line-through" : "bg-amber-50 text-amber-700"
+            <span className={`inline-flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-lg ${
+              isCompleted ? "bg-gray-100 text-gray-400 line-through" : "bg-ft-coral/10 text-ft-coral"
             }`}>
               🎯 {task.targetWord}
             </span>
             {!isCompleted && relatedLearning.length > 0 && (
               <button
                 onClick={() => router.push("/parent/daily-learning")}
-                className="ml-2 inline-flex items-center gap-1 text-xs font-semibibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 align-middle active:scale-95"
+                className="ml-2 inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-ft-blue/10 text-ft-blue border border-ft-blue/30 align-middle active:scale-95"
               >
                 💡 去学习
               </button>
@@ -139,9 +141,9 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
 
           {/* 行3：引导语 */}
           <motion.div custom={3} variants={item} initial="hidden" animate="show"
-            className={`relative pl-3 border-l-2 ${isCompleted ? "border-gray-300" : config.borderColor}`}
+            className={`relative pl-3 border-l-2 ${isCompleted ? "border-gray-300" : "border-ft-coral/40"}`}
           >
-            <p className={`text-sm font-semibold leading-relaxed ${isCompleted ? "text-gray-400 line-through" : "text-gray-800"}`}>
+            <p className={`text-sm font-medium leading-relaxed ${isCompleted ? "text-gray-400 line-through" : "text-ft-ink"}`}>
               {task.instruction}
             </p>
           </motion.div>
@@ -149,34 +151,34 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
           {/* 行4：小贴士 */}
           {!isCompleted && (
             <motion.div custom={4} variants={item} initial="hidden" animate="show"
-              className={`flex items-start gap-1.5 px-2 py-1.5 rounded-lg ${config.color}`}
+              className={`flex items-start gap-1.5 px-2.5 py-2 rounded-xl ${config.color}`}
             >
               <span className="text-xs mt-0.5">💡</span>
               <span className={`text-xs ${config.color.replace("bg-", "text-").replace("-50", "-600")}`}>{config.tip}</span>
             </motion.div>
           )}
 
-          {/* 行5：按钮区 — 新增绿色播放按钮 */}
+          {/* 行5：按钮区 */}
           <motion.div custom={5} variants={item} initial="hidden" animate="show" className="flex items-center gap-2 pt-1">
             <motion.button
               onClick={handleCompleteClick} disabled={isCompleted}
-              whileTap={!isCompleted ? { scale: 0.92 } : undefined}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              whileTap={!isCompleted ? { scale: 0.94 } : undefined}
+              className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-colors ${
                 isCompleted
-                  ? "bg-green-100 text-green-600 border border-green-200"
-                  : "bg-indigo-500 text-white shadow-sm hover:bg-indigo-600"
+                  ? "bg-ft-success/12 text-ft-success border border-ft-success/30"
+                  : "ft-btn-primary"
               }`}
               style={{ minHeight: 44, minWidth: 44 }}
             >
               {isCompleted ? "✓ 已完成" : "✓ 标记完成"}
             </motion.button>
 
-            {/* 绿色播放按钮 — 点击弹出动画演示 */}
+            {/* 珊瑚色播放按钮 — 点击弹出动画演示 */}
             <motion.button
               onClick={() => setShowAnimation(true)}
               whileTap={{ scale: 0.9 }}
               whileHover={{ scale: 1.05 }}
-              className="w-11 h-11 rounded-xl bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-sm transition-colors"
+              className="w-11 h-11 rounded-2xl bg-ft-coral hover:bg-ft-coralDeep flex items-center justify-center shadow-sm transition-colors"
               title="观看动画演示"
               aria-label="播放动画演示"
             >
@@ -195,7 +197,7 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
             <motion.div
               initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
               transition={{ type: "spring", damping: 12, stiffness: 200 }}
-              className="absolute inset-0 rounded-xl flex items-center justify-center bg-white/85 backdrop-blur-sm z-10"
+              className="absolute inset-0 rounded-[20px] flex items-center justify-center bg-white/85 backdrop-blur-sm z-10"
             >
               <div className="text-center">
                 <motion.span className="text-6xl block mb-2"
@@ -205,7 +207,7 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
                   {config.character}
                 </motion.span>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                  className="text-sm font-bold text-indigo-600"
+                  className="text-sm font-bold text-ft-coral"
                 >
                   {config.characterName}说：太棒啦！ 🎉
                 </motion.p>
@@ -232,7 +234,12 @@ export default function TaskCard({ task, onComplete, index }: TaskCardProps) {
   );
 }
 
-function getSceneColor(icon: string): string {
-  const colors: Record<string, string> = { "🍳": "bg-orange-100", "🎮": "bg-purple-100", "🛁": "bg-blue-100", "🌙": "bg-indigo-100" };
-  return colors[icon] || "bg-gray-100";
+function getSceneBadge(icon: string): string {
+  const colors: Record<string, string> = {
+    "🍳": "bg-amber-100",
+    "🎮": "bg-violet-100",
+    "🛁": "bg-sky-100",
+    "🌙": "bg-indigo-100",
+  };
+  return colors[icon] || "bg-ft-blueLight";
 }

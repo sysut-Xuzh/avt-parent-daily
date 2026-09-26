@@ -60,7 +60,7 @@ export default function TaskVoiceRecorder({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-11 h-11 rounded-xl bg-amber-500 hover:bg-amber-600 flex items-center justify-center shadow-sm transition-colors active:scale-95"
+        className="w-11 h-11 rounded-xl bg-ft-coral hover:bg-ft-coralDeep flex items-center justify-center shadow-sm transition-colors active:scale-95"
         title="录音评估参与度"
         aria-label="录音评估"
       >
@@ -88,13 +88,13 @@ export default function TaskVoiceRecorder({
                 <button onClick={() => setOpen(false)} className="text-gray-400 text-lg leading-none">✕</button>
               </div>
               {targetWord && (
-                <div className="mb-3 flex items-center gap-1 px-2 py-1.5 rounded-lg bg-amber-50 w-fit">
-                  <span className="text-xs text-amber-700 font-semibold">🎯 目标词：{targetWord}</span>
+                <div className="mb-3 flex items-center gap-1 px-2 py-1.5 rounded-lg bg-ft-coral/10 w-fit">
+                  <span className="text-xs text-ft-coral font-semibold">🎯 目标词：{targetWord}</span>
                 </div>
               )}
               <p className="text-[11px] text-gray-400 mb-3">
                 原始音频仅留在本机，不会上传；仅保存脱敏的参与度评分。
-                {saving && <span className="text-indigo-500"> · 保存中…</span>}
+                {saving && <span className="text-ft-blue"> · 保存中…</span>}
               </p>
               <VoiceRecorder taskId={taskId} targetWord={targetWord} onComplete={handleComplete} onClose={() => setOpen(false)} />
             </motion.div>

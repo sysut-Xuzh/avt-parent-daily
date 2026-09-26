@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import GreetingHeader from "@/components/greeting-header";
 import StreakCard from "@/components/streak-card";
 import TaskCard from "@/components/task-card";
 import BottomNav from "@/components/bottom-nav";
@@ -14,18 +13,22 @@ import WeeklyStory from "@/components/weekly-story";
 import EmptyState from "@/components/empty-state";
 import GrowthCalendar from "@/components/growth-calendar";
 import VoicePrintSetup from "@/components/voice-recorder/VoicePrintSetup";
-import { bottomTabs } from "@/data/mock-data";
+import { bottomTabs, getGreeting, getTodayDateString } from "@/data/mock-data";
 import { DEFAULT_PRACTICE_WORDS, LEARNING_ITEMS } from "@/data/learning";
 import { addToOfflineQueue, syncOfflineQueue } from "@/lib/offline-sync";
 import { getVoicePrintStatus, type VoiceProfileStatus } from "@/lib/recording-store";
 import { getRecommendationsForParent, type RecommendationRow } from "@/lib/recommendations-service";
 import CoachTour, { FIRST_LOGIN_TOUR } from "@/components/feature-guide/CoachTour";
 import BabySwitcher from "@/components/baby-switcher";
+import { useBaby } from "@/components/baby-provider";
 import { ONBOARDING_FLAG } from "@/lib/guide-content";
 import type { DailyTask, UserProgress, TabId } from "@/types";
 
 export default function ParentPage() {
   const router = useRouter();
+  // 当前家长绑定的宝宝：任务/进度都按它查询，切换宝宝后自动刷新
+  // （修复：此前不传 baby_id，服务端一律回退到默认宝宝，导致治疗师布置的任务看不到）
+  const { currentBabyId } = useBaby();
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [progress, setProgress] = useState<UserProgress>({
     streakDays: 0, todayCompleted: 0, todayTotal: 0,
@@ -55,9 +58,10 @@ export default function ParentPage() {
   useEffect(() => {
     async function fetchData() {
       try {
+        const qs = currentBabyId ? `?baby_id=${encodeURIComponent(currentBabyId)}` : "";
         const [tasksRes, progressRes] = await Promise.all([
-          fetch("/api/tasks/today"),
-          fetch("/api/progress/today"),
+          fetch(`/api/tasks/today${qs}`),
+          fetch(`/api/progress/today${qs}`),
         ]);
         if (!tasksRes.ok) throw new Error("获取任务失败");
         if (!progressRes.ok) throw new Error("获取进度失败");
@@ -93,7 +97,7 @@ export default function ParentPage() {
     // 页面加载时也尝试同步
     syncOfflineQueue();
     return () => window.removeEventListener("online", handleOnline);
-  }, []);
+  }, [currentBabyId]);
 
   // 首次登录引导（方案：功能导览）：未引导过 → 先走引导浮层
   useEffect(() => {
@@ -175,7 +179,7 @@ export default function ParentPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-transparent">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin text-4xl mb-3">⏳</div>
@@ -187,18 +191,61 @@ export default function ParentPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 md:bg-transparent">
+    <div className="flex flex-col min-h-screen bg-transparent">
       <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
-        <div className="md:px-6 md:pt-2"><GreetingHeader /></div>
+        {/* 顶部手绘场景横幅（占位：真实手绘横幅为待制素材，见方案 §8） */}
+        <div className="relative mt-3 mx-4 md:mx-6 rounded-3xl overflow-hidden ft-scene-day shadow-illust">
+          <div className="pointer-events-none absolute inset-0 flex items-start justify-between p-4 text-3xl opacity-70 select-none ft-bob">
+            <span>☀️</span>
+            <span>🧸</span>
+            <span>🎵</span>
+          </div>
+          <div className="relative flex items-center justify-between p-5 pt-6">
+            <div>
+              <p className="font-hand text-2xl text-ft-ink">{getGreeting()}，妈妈 👋</p>
+              <p className="text-sm text-ft-ink/80 mt-0.5">
+                今天有 {totalCount} 个冒险任务，和宝贝一起走完吧～
+              </p>
+              <p className="text-[11px] text-ft-inkSoft mt-1">{getTodayDateString()}</p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-white/70 backdrop-blur flex items-center justify-center text-ft-blue text-lg font-bold shadow-sm">
+              宝
+            </div>
+          </div>
+        </div>
         <BabySwitcher />
         <div className="mt-3 md:px-6"><StreakCard progress={progress} /></div>
 
-        {/* 语音练习卡片（方案 §5 双入口之一：今日任务页） */}
-        <div className="mt-3 mx-4 md:mx-6 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-4">
+        {/* 今日旅程入口（A：统一旅程主页，Focus Traveller 风格大地图） */}
+        <div
+          onClick={() => router.push("/parent/journey")}
+          className="mt-3 mx-4 md:mx-6 rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform border border-ft-blue/20"
+          style={{ background: "linear-gradient(135deg,#E8F1F8,#FBF7F0)" }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-extrabold text-amber-800">🎙️ 每日语音练习</p>
-              <p className="text-[11px] text-amber-600/80 mt-0.5">跟读几个词，看看宝贝今天的参与度</p>
+              <p className="text-sm font-extrabold text-ft-blue">
+                🗺️ 今日旅程
+              </p>
+              <p className="text-[11px] mt-0.5 text-ft-inkSoft">
+                把任务、学习、练习串成一段旅途，陪宝贝一步步走完
+              </p>
+            </div>
+            <span
+              className="text-xs font-semibold text-white px-3.5 py-2 rounded-full whitespace-nowrap"
+              style={{ background: "#4A90B6" }}
+            >
+              进入 ›
+            </span>
+          </div>
+        </div>
+
+        {/* 语音练习卡片（方案 §5 双入口之一：今日任务页） */}
+        <div className="mt-3 mx-4 md:mx-6 rounded-2xl bg-ft-coral/8 border border-ft-coral/25 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-extrabold text-ft-coral">🎙️ 每日语音练习</p>
+              <p className="text-[11px] text-ft-coral/80 mt-0.5">跟读几个词，看看宝贝今天的参与度</p>
             </div>
             <button
               onClick={() =>
@@ -206,14 +253,14 @@ export default function ParentPage() {
                   `/parent/voice-lab?mode=daily&source=task_page&words=${encodeURIComponent(DEFAULT_PRACTICE_WORDS.join(","))}`
                 )
               }
-              className="text-xs font-semibold text-white bg-amber-500 px-3.5 py-2 rounded-full active:scale-95 whitespace-nowrap"
+              className="text-xs font-semibold text-white bg-ft-coral px-3.5 py-2 rounded-full active:scale-95 whitespace-nowrap"
             >
               去练习 ›
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2.5">
             {DEFAULT_PRACTICE_WORDS.map((w) => (
-              <span key={w} className="px-2.5 py-1 rounded-full bg-white/70 text-amber-700 text-xs font-medium">
+              <span key={w} className="px-2.5 py-1 rounded-full bg-white text-ft-coral text-xs font-medium">
                 {w}
               </span>
             ))}
@@ -223,9 +270,9 @@ export default function ParentPage() {
         {/* 治疗师推荐同步（方案 § P3）：家长端可见治疗师推送的学习内容 */}
         {recommendations.length > 0 && (
           <div className="mt-3 mx-4 md:mx-6">
-            <p className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+            <p className="text-sm font-bold text-ft-ink mb-2 flex items-center gap-1.5">
               <span>📩</span> 治疗师推荐
-              <span className="text-[10px] font-normal text-gray-400">来自治疗师的学习建议</span>
+              <span className="text-[10px] font-normal text-ft-inkSoft">来自治疗师的学习建议</span>
             </p>
             <div className="space-y-2">
               {recommendations.map((rec) => {
@@ -238,21 +285,21 @@ export default function ParentPage() {
                     : DEFAULT_PRACTICE_WORDS;
                 const title = item?.title || rec.content_title;
                 return (
-                  <div key={rec.id} className="rounded-2xl bg-white p-3 shadow-sm border border-indigo-100">
+                  <div key={rec.id} className="rounded-2xl bg-white p-3 shadow-sm border border-ft-blue/15">
                     <div className="flex items-start gap-2">
                       <span className="text-lg">📚</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-800 truncate">{title}</p>
+                        <p className="text-sm font-bold text-ft-ink truncate">{title}</p>
                         {rec.note && (
-                          <p className="text-[11px] text-indigo-600 mt-0.5 leading-snug">💬 {rec.note}</p>
+                          <p className="text-[11px] text-ft-blue mt-0.5 leading-snug">💬 {rec.note}</p>
                         )}
-                        <p className="text-[10px] text-gray-400 mt-0.5">推荐人：{rec.therapist_name}</p>
+                        <p className="text-[10px] text-ft-inkSoft mt-0.5">推荐人：{rec.therapist_name}</p>
                       </div>
                     </div>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => router.push(`/parent/daily-learning?item=${encodeURIComponent(rec.content_id)}`)}
-                        className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-600 text-xs font-medium active:scale-95"
+                        className="flex-1 py-2 rounded-xl bg-ft-warm text-ft-ink text-xs font-medium active:scale-95"
                       >
                         查看内容
                       </button>
@@ -262,7 +309,7 @@ export default function ParentPage() {
                             `/parent/voice-lab?mode=daily&source=task_page&contentId=${encodeURIComponent(rec.content_id)}&title=${encodeURIComponent(title)}&words=${encodeURIComponent(words.join(","))}`
                           )
                         }
-                        className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold active:scale-95"
+                        className="flex-1 py-2 rounded-xl bg-ft-coral text-white text-xs font-bold active:scale-95"
                       >
                         🎙️ 去练习
                       </button>
@@ -276,14 +323,14 @@ export default function ParentPage() {
 
         {/* 声纹建档提示栏：已跳过 → 常驻引导；已建档/自动推断 → 不显示 */}
         {voiceStatus === "skipped" && (
-          <div className="mt-3 mx-4 md:mx-6 flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50 border border-indigo-100">
+          <div className="mt-3 mx-4 md:mx-6 flex items-center gap-2 px-3 py-2 rounded-xl bg-ft-blueLight border border-ft-blue/20">
             <span className="text-base">🎙️</span>
-            <p className="flex-1 text-[12px] text-indigo-700 leading-snug">
+            <p className="flex-1 text-[12px] text-ft-blue leading-snug">
               还没录入宝宝声线，识别会更准哦～
             </p>
             <button
               onClick={() => setShowVoiceModal(true)}
-              className="text-[12px] font-semibold text-indigo-600 bg-white px-3 py-1 rounded-full active:scale-95"
+              className="text-[12px] font-semibold text-ft-blue bg-white px-3 py-1 rounded-full active:scale-95"
             >
               去录入
             </button>
@@ -292,8 +339,8 @@ export default function ParentPage() {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="flex items-center justify-between px-4 md:px-8 mt-5 mb-2">
-          <h2 className="text-base md:text-lg font-bold text-gray-800">今日训练清单</h2>
-          <span className="text-xs md:text-sm text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+          <h2 className="text-base md:text-lg font-bold text-ft-ink">今日训练清单</h2>
+          <span className="text-xs md:text-sm text-ft-inkSoft bg-ft-warm px-2.5 py-1 rounded-full">
             {completedCount}/{totalCount} 完成
           </span>
         </motion.div>
@@ -322,7 +369,7 @@ export default function ParentPage() {
                   const el = document.getElementById("task-" + firstPending.id);
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                 }}
-                className="w-full py-2.5 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 text-sm font-medium hover:bg-indigo-100 transition-all active:scale-[0.98]"
+                className="w-full py-2.5 rounded-xl bg-ft-blueLight border border-ft-blue/20 text-ft-blue text-sm font-medium hover:bg-ft-blue/15 transition-all active:scale-[0.98]"
               >
                 📋 查看下一提示（还有 {pendingTasks.length} 个待完成）
               </button>

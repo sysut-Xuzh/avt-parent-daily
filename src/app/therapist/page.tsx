@@ -25,6 +25,7 @@ export default function TherapistPage() {
   const router = useRouter();
   const [tab, setTab] = useState<TabView>("plan");
   const [babyList, setBabyList] = useState<{ id: string; name: string }[]>([]);
+  const [babyId, setBabyId] = useState("");
   const [babyName, setBabyName] = useState("");
   const [activities, setActivities] = useState<PlanActivity[]>([]);
   const [saved, setSaved] = useState(false);
@@ -69,16 +70,19 @@ export default function TherapistPage() {
         if (d?.babies && d.babies.length > 0) {
           setBabyList(d.babies);
           const defaultBaby = d.babies.find((b: { name: string }) => b.name === "小宝") || d.babies[0];
+          setBabyId(defaultBaby.id);
           setBabyName(defaultBaby.name);
-          loadPlan(defaultBaby.name);
+          loadPlan(defaultBaby.id, defaultBaby.name);
         }
       })
       .catch(() => {});
   }, []);
 
   // 加载当前方案（基于今天日计划的任务）
-  const loadPlan = (name: string) => {
-    fetch(`/api/weekly-plans/current?baby_name=${encodeURIComponent(name)}`)
+  // ⚠️ 用 baby_id 查询而不是名字：同名宝宝（种子"小宝"与真实家长"小宝"）不会串号
+  const loadPlan = (id: string, name?: string) => {
+    const qs = id ? `baby_id=${encodeURIComponent(id)}` : `baby_name=${encodeURIComponent(name || "")}`;
+    fetch(`/api/weekly-plans/current?${qs}`)
       .then(r => r.json())
       .then(d => {
         if (d?.plan && d.plan.activities && d.plan.activities.length > 0) {
@@ -97,9 +101,11 @@ export default function TherapistPage() {
       .catch(() => {});
   };
 
-  const handleBabyChange = (name: string) => {
-    setBabyName(name);
-    loadPlan(name);
+  const handleBabyChange = (id: string) => {
+    const baby = babyList.find((b) => b.id === id);
+    setBabyId(id);
+    setBabyName(baby?.name || "");
+    loadPlan(id, baby?.name);
   };
 
   // 修改某个活动的目标词/场景
@@ -133,6 +139,7 @@ export default function TherapistPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          babyId,
           babyName,
           activities: valid.map((a) => ({
             activityId: a.activityId,
@@ -220,11 +227,18 @@ export default function TherapistPage() {
             {/* 选择宝宝 */}
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <label className="text-sm font-semibold text-gray-700 block mb-2">👶 选择宝宝</label>
-              <select value={babyName} onChange={(e) => handleBabyChange(e.target.value)}
+              <select value={babyId} onChange={(e) => handleBabyChange(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                {babyList.length === 0 && <option>加载中...</option>}
-                {babyList.map((b) => <option key={b.id} value={b.name}>{b.name}</option>)}
+                {babyList.length === 0 && <option value="">加载中...</option>}
+                {babyList.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}（{b.id.slice(-4)}）
+                  </option>
+                ))}
               </select>
+              <p className="text-xs text-gray-400 mt-1">
+                任务会写入该宝宝名下，仅其家长可见（括号内为宝宝编号末四位，用于区分同名宝宝）
+              </p>
             </div>
 
             {/* 训练活动列表 */}

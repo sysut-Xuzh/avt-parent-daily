@@ -29,11 +29,12 @@ async function supaPost(table: string, data: Record<string, unknown>) {
     headers: { ...supaHeaders(true), Prefer: "return=representation" },
     body: JSON.stringify(data),
   });
-  if (!res.ok && res.status !== 400 && res.status !== 401 && res.status !== 403) {
+  if (!res.ok) {
+    // ⚠️ 401/403 不再静默吞掉：RLS 拒绝时前端会看到真实错误，而不是"✅ 已保存"却没写进去
     const text = await res.text();
     throw new Error(`写入 ${table} 失败 (${res.status}): ${text}`);
   }
-  return res.ok ? res.json() : null;
+  return res.json();
 }
 
 export async function POST(request: NextRequest) {
@@ -41,14 +42,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     // 新的请求结构：activities = [{ activityId, targetWord, scene }]
     // 兼容旧的：targetWords + strategies
-    const { babyName, activities, targetWords, strategies, scenes, dailyCount } = body;
+    // ⚠️ babyId 优先：治疗师端选择哪个宝宝，任务就写到哪个宝宝名下（修复"布置了家长看不到"）
+    const { babyId: bodyBabyId, babyName, activities, targetWords, strategies, scenes, dailyCount } = body;
 
-    if (!babyName) {
-      return NextResponse.json({ error: "缺少宝宝名称" }, { status: 400 });
+    // 1) 优先用调用方显式传入的 baby_id（最可靠，避免同名宝宝串号）
+    // 2) 其次按 baby_name 反查（兼容旧调用 / 只有名字的场景）
+    // 3) 最后才兜底到演示默认宝宝
+    let babyId: string | null = typeof bodyBabyId === "string" && bodyBabyId ? bodyBabyId : null;
+
+    if (!babyId && babyName) {
+      const bRes = await fetch(
+        `${SUPA_URL}/rest/v1/babies?select=id&name=eq.${encodeURIComponent(String(babyName))}&order=created_at.asc&limit=1`,
+        { cache: "no-store", headers: supaHeaders() }
+      );
+      const babies = await bRes.json();
+      babyId = Array.isArray(babies) && babies[0]?.id ? babies[0].id : null;
     }
 
-    // 直接用常量 DEFAULT_BABY_ID（演示期单宝宝；避免依赖 babies 表的匿名读取策略）
-    const babyId = DEFAULT_BABY_ID;
+    if (!babyId) {
+      babyId = DEFAULT_BABY_ID;
+    }
 
     // 查治疗师 UUID（找不到时兜底到默认治疗师 ID）
     const therapistRes = await fetch(
@@ -191,12 +204,20 @@ export async function POST(request: NextRequest) {
         continue; // 已完成保留
       }
       if (existing) {
-        await fetch(`${SUPA_URL}/rest/v1/tasks?id=eq.${existing.id}`, {
+        const patchRes = await fetch(`${SUPA_URL}/rest/v1/tasks?id=eq.${existing.id}`, {
           cache: "no-store",
           method: "PATCH",
-          headers: { ...supaHeaders(true) },
+          headers: { ...supaHeaders(true), Prefer: "return=representation" },
           body: JSON.stringify({ time: task.time, scene: task.scene, scene_icon: task.scene_icon, instruction: task.instruction, sort_order: task.sort_order, target_word: task.target_word, animation_url: task.animation_url, speech_text: task.speech_text, activity_type: task.activity_type }),
         });
+        if (!patchRes.ok) {
+          const text = await patchRes.text();
+          throw new Error(`更新任务失败 (${patchRes.status}): ${text}`);
+        }
+        const patched = await patchRes.json();
+        if (Array.isArray(patched) && patched.length === 0) {
+          throw new Error("更新任务失败：RLS 策略拒绝了写入（0 行生效）");
+        }
         inserted++;
       } else {
         const result = await supaPost("tasks", task);
@@ -223,8 +244,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 兜底校验：有任务要写但一条都没生效 → 明确报错，避免前端显示"✅ 已保存"却什么都没发生
+    if (tasks.length > 0 && inserted === 0) {
+      return NextResponse.json(
+        { error: "任务写入失败：0 条生效，请检查 tasks 表的 RLS 写策略" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
+      babyId,
       dailyPlanId,
       tasksGenerated: inserted,
     });

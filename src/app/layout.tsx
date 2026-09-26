@@ -18,7 +18,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#6366f1",
+  themeColor: "#4A90B6",
 };
 
 export default function RootLayout({
@@ -32,10 +32,17 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* Focus Traveller 字体：圆润标题 + 手写装饰 + Inter 正文 */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@400;500;600&family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="min-h-screen bg-gray-50">
+      <body className="min-h-screen">
         <PWAInit />
-        <main className="max-w-lg md:max-w-5xl mx-auto bg-white min-h-screen md:min-h-0 md:my-6 md:rounded-2xl md:shadow-lg pb-20 md:pb-6">
+        <main className="max-w-lg md:max-w-5xl mx-auto bg-transparent md:bg-white min-h-screen md:min-h-0 md:my-6 md:rounded-2xl md:shadow-lg pb-24">
           {children}
         </main>
       </body>

@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [familyCode, setFamilyCode] = useState("");
+  const [babyName, setBabyName] = useState("");
   const [justCreatedFamily, setJustCreatedFamily] = useState(false);
   const [step, setStep] = useState<"phone" | "otp" | "family">("phone");
   const [loading, setLoading] = useState(false);
@@ -186,16 +187,20 @@ export default function LoginPage() {
     router.push(role === "parent" ? "/parent" : "/therapist");
   };
 
-  // 创建家庭码（治疗师）
+  // 创建家庭码（家长：同时创建宝宝）
   const handleCreateFamily = async () => {
     setError("");
     setMessage("");
+    if (!babyName.trim()) {
+      setError("请先填写宝宝姓名");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/families", {
         method: "POST",
         headers: await authHeaders(),
-        body: JSON.stringify({ action: "create", babyName: "小宝" }),
+        body: JSON.stringify({ action: "create", babyName: babyName.trim(), role }),
       });
       const data = await res.json();
       if (data.success && data.family) {
@@ -364,10 +369,41 @@ export default function LoginPage() {
               <p className="text-sm text-gray-600 mt-2 font-medium">家庭信息确认</p>
               <p className="text-xs text-gray-400 mt-1">
                 {role === "therapist"
-                  ? "作为治疗师：输入家庭码管理学员，或创建新家庭"
-                  : "作为家长：输入治疗师给您的家庭码"}
+                  ? "作为治疗师：输入家长给你的家庭码加入即可"
+                  : "作为家长：先填写宝宝姓名创建你的家庭，或输入家庭码加入"}
               </p>
             </div>
+
+            {/* 家长：创建自己的家庭 + 宝宝 */}
+            {role === "parent" && (
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 block">宝宝姓名</label>
+                <input
+                  type="text"
+                  value={babyName}
+                  onChange={(e) => setBabyName(e.target.value)}
+                  placeholder="如：小明"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+                <button
+                  onClick={handleCreateFamily}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-600 disabled:opacity-50 transition-all"
+                >
+                  {loading ? "创建中..." : "🏠 创建我的家庭"}
+                </button>
+              </div>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-xs text-gray-400">或</span>
+              </div>
+            </div>
+
             <input
               type="text"
               value={familyCode}
@@ -382,15 +418,6 @@ export default function LoginPage() {
             >
               {loading ? "处理中..." : `加入并进入${role === "parent" ? "家长端" : "治疗师端"} →`}
             </button>
-            {role === "therapist" && (
-              <button
-                onClick={handleCreateFamily}
-                disabled={loading}
-                className="w-full py-3 rounded-xl border border-teal-300 text-teal-600 font-semibold text-sm hover:bg-teal-50 disabled:opacity-50 transition-all"
-              >
-                {loading ? "创建中..." : "➕ 创建新家庭码"}
-              </button>
-            )}
             <button
               onClick={() => handleEnter(false)}
               className="w-full py-2 text-xs text-gray-400 hover:text-gray-600"

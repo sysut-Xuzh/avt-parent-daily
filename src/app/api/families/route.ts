@@ -30,7 +30,7 @@ function generateFamilyCode(): string {
 }
 
 // POST /api/families
-// body: { action: "create" | "join", babyName?, code? }
+// body: { action: "create" | "join", babyName? | babyId?, code?, role? }
 export async function POST(request: NextRequest) {
   try {
     const supabase = getAuthedClient(request);
@@ -47,13 +47,13 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     // 确保 users 业务表有该用户（防止 families.created_by 外键失败）
+    const roleGuess: string = body.role || "parent";
     const { data: existingUser } = await supabase
       .from("users")
       .select("id")
       .eq("id", user.id)
       .maybeSingle();
     if (!existingUser) {
-      const roleGuess = body.role || "parent";
       await supabase.from("users").upsert(
         {
           id: user.id,
@@ -65,20 +65,40 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "create") {
-      // 创建家庭码：需要指定宝宝（用宝宝名字查）
-      const babyName = body.babyName;
-      if (!babyName) {
-        return NextResponse.json({ error: "缺少宝宝名称" }, { status: 400 });
+      // 创建家庭：先确定宝宝（按名查找，找不到则创建）
+      let babyId: string | null = body.babyId || null;
+      if (!babyId && body.babyName) {
+        const { data: found } = await supabase
+          .from("babies")
+          .select("id")
+          .eq("name", body.babyName)
+          .limit(1);
+        if (found && found.length > 0) {
+          babyId = found[0].id;
+        } else {
+          const { data: newBaby, error: babyErr } = await supabase
+            .from("babies")
+            .insert({
+              parent_id: user.id,
+              name: body.babyName,
+              ...(body.birthDate ? { birth_date: body.birthDate } : {}),
+            })
+            .select("id")
+            .single();
+          if (babyErr || !newBaby) {
+            return NextResponse.json(
+              { error: `创建宝宝失败: ${babyErr?.message || "未知错误"}` },
+              { status: 500 }
+            );
+          }
+          babyId = newBaby.id;
+        }
       }
-      // 查宝宝（已登录用户可读，靠 babies_authenticated_read 策略）
-      const { data: babies } = await supabase
-        .from("babies")
-        .select("id")
-        .eq("name", babyName)
-        .limit(1);
-      const babyId = babies?.[0]?.id;
       if (!babyId) {
-        return NextResponse.json({ error: `找不到宝宝 ${babyName}` }, { status: 404 });
+        return NextResponse.json(
+          { error: "缺少宝宝信息（请填写宝宝姓名）" },
+          { status: 400 }
+        );
       }
 
       // 生成唯一家庭码
@@ -105,10 +125,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 创建者自动加入
+      // 创建者自动加入家庭成员
       const { error: memberError } = await supabase
         .from("family_members")
-        .insert({ family_id: inserted.id, user_id: user.id, role: "parent" })
+        .insert({ family_id: inserted.id, user_id: user.id, role: roleGuess })
         .select()
         .single();
       if (memberError) {
@@ -116,6 +136,15 @@ export async function POST(request: NextRequest) {
           { error: `家庭码已创建但加入失败: ${memberError.message}` },
           { status: 500 }
         );
+      }
+
+      // 治疗师创建时，建立 family_therapists 关联
+      if (roleGuess === "therapist") {
+        await supabase
+          .from("family_therapists")
+          .insert({ baby_id: babyId, therapist_id: user.id })
+          .select()
+          .single();
       }
 
       return NextResponse.json({ success: true, family: inserted });
@@ -126,7 +155,7 @@ export async function POST(request: NextRequest) {
       if (!code) {
         return NextResponse.json({ error: "缺少家庭码" }, { status: 400 });
       }
-      // 查家庭（按 code 精确查询，靠 families_lookup 策略；API 只允许按码查，无法列出全部）
+      // 查家庭（按 code 精确查询）
       const { data: family } = await supabase
         .from("families")
         .select("id, code, baby_id")
@@ -145,6 +174,14 @@ export async function POST(request: NextRequest) {
           { error: "加入失败（可能已在该家庭）" },
           { status: 400 }
         );
+      }
+      // 治疗师加入时，建立 family_therapists 关联（用于治疗师端查看负责家庭）
+      if (role === "therapist") {
+        await supabase
+          .from("family_therapists")
+          .insert({ baby_id: family.baby_id, therapist_id: user.id })
+          .select()
+          .single();
       }
       return NextResponse.json({ success: true, family });
     }

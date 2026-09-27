@@ -7,6 +7,8 @@ import TherapistDashboard from "@/components/therapist-dashboard";
 import TherapistCommunity from "@/components/therapist-community";
 import TherapistConsult from "@/components/therapist-consult";
 import TherapistRecommend from "@/components/therapist-recommend";
+import CustomActivityPicker from "@/components/custom-activity-picker";
+import Link from "next/link";
 import { TRAINING_ACTIVITIES, getActivityById } from "@/data/training-activities";
 
 type TabView = "plan" | "dashboard" | "community" | "consult" | "recommend";
@@ -19,6 +21,8 @@ interface PlanActivity {
   activityId: string;
   targetWord: string;
   scene: string;
+  customName?: string;
+  customInstruction?: string;
 }
 
 export default function TherapistPage() {
@@ -99,7 +103,15 @@ export default function TherapistPage() {
       .then(r => r.json())
       .then(d => {
         if (d?.plan && d.plan.activities && d.plan.activities.length > 0) {
-          setActivities(d.plan.activities);
+          setActivities(
+            d.plan.activities.map((a: any) => ({
+              activityId: a.activityId,
+              targetWord: a.targetWord || "",
+              scene: a.scene || "游戏",
+              customName: a.customName,
+              customInstruction: a.customInstruction,
+            }))
+          );
         } else {
           // 默认给4个活动占位
           const defaults: PlanActivity[] = [
@@ -158,6 +170,8 @@ export default function TherapistPage() {
             activityId: a.activityId,
             targetWord: a.targetWord.trim(),
             scene: a.scene,
+            ...(a.customName ? { customName: a.customName } : {}),
+            ...(a.customInstruction ? { customInstruction: a.customInstruction } : {}),
           })),
           strategies: [],
           scenes: [],
@@ -193,6 +207,11 @@ export default function TherapistPage() {
             title="输入家长给你的家庭码，加入其家庭">
             ➕ 加入家庭
           </button>
+          <Link href="/therapist/library"
+            className="ml-2 shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-teal-100 text-teal-700 hover:bg-teal-200"
+            title="创建并管理自定义训练">
+            📚 训练库
+          </Link>
           {showJoin && (
             <div className="absolute top-[5rem] right-4 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-2 shadow-sm z-20">
               <input value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
@@ -330,6 +349,9 @@ export default function TherapistPage() {
               </div>
             </div>
 
+            {/* 自定义训练快捷添加 */}
+            <CustomActivityPicker onAdd={(a) => setActivities((prev) => [...prev, a])} />
+
             {/* 保存按钮 */}
             <button onClick={handleSave} disabled={saving}
               className="w-full py-3 rounded-xl bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all">
@@ -345,7 +367,7 @@ export default function TherapistPage() {
                 {activities.filter((a) => a.targetWord.trim()).map((a, i) => {
                   const info = getActivityById(a.activityId);
                   return (
-                    <p key={i}>🎬 {info?.name || "?"} → 🎯 {a.targetWord}</p>
+                    <p key={i}>🎬 {info?.name || a.customName || "?"} → 🎯 {a.targetWord}</p>
                   );
                 })}
               </div>

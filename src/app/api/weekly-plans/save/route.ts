@@ -150,22 +150,26 @@ export async function POST(request: NextRequest) {
           STRATEGY_TO_ACTIVITY[rawId] ||
           rawId;
         const act = getActivityById(activityId);
-        const anim = getActivityAnim(activityId);
+        const anim = act ? getActivityAnim(activityId) : undefined;
         const scene = a.scene || scenes?.[i % (scenes?.length || 1)] || "游戏";
+        const customName = a.customName;
+        const customInstruction = a.customInstruction;
         return {
           daily_plan_id: dailyPlanId,
           baby_id: babyId,
           time: times[i % times.length],
           scene,
           scene_icon: sceneIcons[scene] || "📋",
-          strategy: act?.name || a.activityId || "训练活动",
+          strategy: act?.name || customName || a.activityId || "训练活动",
           target_word: a.targetWord || "",
-          instruction: `${act?.name || "训练"}：围绕「${a.targetWord || ""}」进行练习`,
+          instruction:
+            customInstruction ||
+            `${act?.name || "训练"}：围绕「${a.targetWord || ""}」进行练习`,
           sort_order: i + 1,
           status: "pending",
           activity_type: activityId,
-          animation_url: anim.animFile,
-          speech_text: anim.speechText,
+          animation_url: anim?.animFile || null,
+          speech_text: anim?.speechText || null,
           audio_url: null,
         };
       });

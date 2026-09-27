@@ -64,12 +64,19 @@ export async function GET(request: NextRequest) {
     }
 
     // 组装活动列表
-    const activities = tasks.map((t: any) => ({
-      activityId: t.activity_type || t.strategy || "sound-detection",
-      activityName: getActivityById(t.activity_type)?.name || t.strategy,
-      targetWord: t.target_word || "",
-      scene: t.scene || "游戏",
-    }));
+    const activities = tasks.map((t: any) => {
+      const isCustom =
+        typeof t.activity_type === "string" && t.activity_type.startsWith("custom:");
+      return {
+        activityId: t.activity_type || t.strategy || "sound-detection",
+        activityName: getActivityById(t.activity_type)?.name || t.strategy,
+        targetWord: t.target_word || "",
+        scene: t.scene || "游戏",
+        // 自定义训练回传标题/指导语，便于排课页编辑时保持
+        customName: isCustom ? t.strategy : undefined,
+        customInstruction: isCustom ? t.instruction : undefined,
+      };
+    });
 
     return NextResponse.json({
       plan: {

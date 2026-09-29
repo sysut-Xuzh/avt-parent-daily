@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import StreakCard from "@/components/streak-card";
 import TaskCard from "@/components/task-card";
 import BottomNav from "@/components/bottom-nav";
+import FeedbackWidget from "@/components/FeedbackWidget";
 import CelebrationToast from "@/components/celebration-toast";
 import AllDoneCard from "@/components/all-done-card";
 import DailySummary from "@/components/daily-summary";
@@ -240,6 +241,30 @@ export default function ParentPage() {
           </div>
         </div>
 
+        {/* 知识资源入口（治疗师内容库，家长端浏览） */}
+        <div
+          onClick={() => router.push("/parent/resources")}
+          className="mt-3 mx-4 md:mx-6 rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform border border-amber-200/40"
+          style={{ background: "linear-gradient(135deg,#FFF7ED,#FEF3C7)" }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-extrabold text-amber-700">
+                📚 知识资源
+              </p>
+              <p className="text-[11px] mt-0.5 text-amber-700/70">
+                治疗师精选的文章、论文、书籍与播客
+              </p>
+            </div>
+            <span
+              className="text-xs font-semibold text-white px-3.5 py-2 rounded-full whitespace-nowrap"
+              style={{ background: "#D97706" }}
+            >
+              去看看 ›
+            </span>
+          </div>
+        </div>
+
         {/* 语音练习卡片（方案 §5 双入口之一：今日任务页） */}
         <div className="mt-3 mx-4 md:mx-6 rounded-2xl bg-ft-coral/8 border border-ft-coral/25 p-4">
           <div className="flex items-center justify-between">
@@ -384,6 +409,7 @@ export default function ParentPage() {
       <CelebrationToast show={showToast} onClose={handleCloseToast} />
       <VoicePrintSetup open={showVoiceModal} onDone={handleVoiceDone} />
       <CoachTour open={showOnboarding} steps={FIRST_LOGIN_TOUR} onDone={finishOnboarding} />
+      <FeedbackWidget auto />
     </div>
   );
 }

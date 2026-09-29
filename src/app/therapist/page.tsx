@@ -212,6 +212,11 @@ export default function TherapistPage() {
             title="创建并管理自定义训练">
             📚 训练库
           </Link>
+          <Link href="/therapist/content"
+            className="ml-2 shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+            title="策展文章/论文/书籍/播客，分享给家长">
+            💡 内容库
+          </Link>
           {showJoin && (
             <div className="absolute top-[5rem] right-4 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-2 shadow-sm z-20">
               <input value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())}

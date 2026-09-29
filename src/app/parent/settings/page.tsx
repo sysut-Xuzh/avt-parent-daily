@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import VoicePrintSetup from "@/components/voice-recorder/VoicePrintSetup";
 import { registerServiceWorker, subscribeToPush, showLocalDemoNotification } from "@/lib/push-client";
+import FeedbackWidget from "@/components/FeedbackWidget";
 import { getVoiceProfile, type VoiceProfileStatus } from "@/lib/recording-store";
 import {
   loadParentProfile,
@@ -330,6 +331,11 @@ export default function ParentSettingsPage() {
               <span className="text-gray-300 text-sm">›</span>
             </div>
           </button>
+        </motion.div>
+
+        {/* 建议信箱（云端汇总 + 本地备份，每月自动提醒一次） */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
+          <FeedbackWidget asCard />
         </motion.div>
 
         {/* 作息时间表 */}

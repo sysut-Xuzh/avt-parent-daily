@@ -13,6 +13,10 @@ export interface JourneyStation {
   href?: string;
   onAction?: () => void;
   actionLabel?: string;
+  /** 次要动作（如任务站的「陪练」入口或「标记完成」快捷） */
+  secondaryHref?: string;
+  secondaryOnAction?: () => void;
+  secondaryLabel?: string;
 }
 
 interface JourneyMapProps {
@@ -352,7 +356,7 @@ export default function JourneyMap({
                     {s.subtitle}
                   </p>
                   {!s.done && (
-                    <div className="mt-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       {s.href ? (
                         <button
                           onClick={() => s.href && (window.location.href = s.href)}
@@ -366,6 +370,24 @@ export default function JourneyMap({
                           className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white bg-ft-pine hover:bg-ft-pineDeep transition-colors"
                         >
                           {s.actionLabel || "标记完成"}
+                        </button>
+                      )}
+                      {s.secondaryHref && (
+                        <button
+                          onClick={() => s.secondaryHref && (window.location.href = s.secondaryHref)}
+                          className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                          style={{ background: "#EFE7DA", color: "#8A7A68" }}
+                        >
+                          {s.secondaryLabel || "陪练"}
+                        </button>
+                      )}
+                      {s.secondaryOnAction && (
+                        <button
+                          onClick={s.secondaryOnAction}
+                          className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                          style={{ background: "#EFE7DA", color: "#8A7A68" }}
+                        >
+                          {s.secondaryLabel || "标记完成"}
                         </button>
                       )}
                     </div>

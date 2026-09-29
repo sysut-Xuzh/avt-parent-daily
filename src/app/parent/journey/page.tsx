@@ -62,8 +62,14 @@ export default function JourneyPage() {
     subtitle: `${t.time} · ${t.scene} · ${t.strategy}`,
     icon: t.sceneIcon || "📋",
     done: t.completed,
-    onAction: () => handleComplete(t.id),
-    actionLabel: "标记完成",
+    href: `/parent/practice?taskId=${encodeURIComponent(t.id)}&activity=${encodeURIComponent(
+      t.activityType || ""
+    )}&word=${encodeURIComponent(t.targetWord || "")}&scene=${encodeURIComponent(
+      t.scene || ""
+    )}&title=${encodeURIComponent(t.targetWord ? `训练「${t.targetWord}」` : t.strategy)}`,
+    actionLabel: "开始陪练",
+    secondaryOnAction: t.completed ? undefined : () => handleComplete(t.id),
+    secondaryLabel: "标记完成",
   }));
 
   const learnStation: JourneyStation = {

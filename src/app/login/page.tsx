@@ -22,9 +22,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   // 发送验证码
-  // 【测试模式】用 Supabase 匿名登录（signInAnonymously）创建真实用户，无需短信/密码
-  // 换成阿里云/Twilio 真短信时：testMode=false，恢复 signInWithOtp 流程
-  const testMode = false; // ← 真短信/Custom SMS 已就绪：手机号走 signInWithOtp，邮箱走 magic link；SMS 未配好前手机号不可用，magic link 可用
+  // 阶段 B 真实登录：手机号走 signInWithOtp（需 Supabase Custom SMS Provider + 阿里云短信，待企业资质）；
+  // 邮箱走 magic link（当前可用）。两者登录成功后都进入「家庭码」步骤。
+  const testMode = false;
 
   const handleSendCode = async () => {
     setError("");
@@ -235,7 +235,8 @@ export default function LoginPage() {
     }
   };
 
-  // 邮箱 magic link 回调：点击邮件链接跳回本页 ?verified=1 → 补建业务用户行 + 同步角色 → 进入对应端
+  // 邮箱 magic link 回调：点击邮件链接跳回本页 ?verified=1 → 补建业务用户行 + 同步角色
+  // → 已建过家庭的直接进主页；否则进入「家庭码」步骤（填宝宝姓名/家庭码），与手机号流程一致
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("verified") !== "1") return;
@@ -246,7 +247,20 @@ export default function LoginPage() {
       const savedRole = (localStorage.getItem("avt_role") as Role) || "parent";
       await ensureUserRow(savedRole);
       await storeRole(savedRole);
-      router.replace(savedRole === "parent" ? "/parent" : "/therapist");
+      // 清理 URL 上的 verified 标记，避免刷新重复触发
+      try {
+        window.history.replaceState(null, "", "/login");
+      } catch {
+        /* ignore */
+      }
+      // 已建过家庭的（本地存过家庭码）直接进入；否则走家庭码步骤
+      const hasFamily = !!localStorage.getItem("avt_family_code");
+      if (hasFamily) {
+        router.replace(savedRole === "parent" ? "/parent" : "/therapist");
+      } else {
+        setRole(savedRole);
+        setStep("family");
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { getSupabaseBrowser } from "@/lib/supabase";
@@ -24,7 +24,7 @@ export default function LoginPage() {
   // 发送验证码
   // 【测试模式】用 Supabase 匿名登录（signInAnonymously）创建真实用户，无需短信/密码
   // 换成阿里云/Twilio 真短信时：testMode=false，恢复 signInWithOtp 流程
-  const testMode = true; // ← 真短信配置好后改成 false
+  const testMode = false; // ← 真短信/Custom SMS 已就绪：手机号走 signInWithOtp，邮箱走 magic link；SMS 未配好前手机号不可用，magic link 可用
 
   const handleSendCode = async () => {
     setError("");
@@ -101,6 +101,7 @@ export default function LoginPage() {
       if (error) throw error;
       // 登录成功 → 进入家庭码步骤
       await storeRole(role);
+      await ensureUserRow(role);
       setStep("family");
       setMessage("登录成功！请确认您的家庭信息");
     } catch (e: unknown) {
@@ -121,6 +122,21 @@ export default function LoginPage() {
     localStorage.setItem("avt_role", r);
   };
 
+  // 确保业务 users 表有当前用户行（家庭码 created_by 外键依赖；真实登录后补建）
+  const ensureUserRow = async (r: Role) => {
+    try {
+      const supabase = getSupabaseBrowser();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("users").upsert(
+        { id: user.id, role: r, name: r === "therapist" ? "治疗师" : "家长" },
+        { onConflict: "id" }
+      );
+    } catch {
+      // 非致命：不影响登录
+    }
+  };
+
   // Email magic link 登录（阶段四·①：先于手机号 OTP 落地，零成本）
   // 发送带回调链接的邮件，点击即登录；会话由 supabase 浏览器端 detectSessionInUrl 自动接管。
   const handleSendEmailLink = async () => {
@@ -135,7 +151,7 @@ export default function LoginPage() {
       const supabase = getSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/parent` },
+        options: { emailRedirectTo: `${window.location.origin}/login?verified=1` },
       });
       if (error) throw error;
       await storeRole(role);
@@ -162,6 +178,7 @@ export default function LoginPage() {
   const handleEnter = async (join: boolean) => {
     setError("");
     setLoading(true);
+    await ensureUserRow(role);
     try {
       // 如果刚创建了家庭码（创建者已自动加入），无需再次 join
       if (join && familyCode && !justCreatedFamily) {
@@ -191,6 +208,7 @@ export default function LoginPage() {
   const handleCreateFamily = async () => {
     setError("");
     setMessage("");
+    await ensureUserRow(role);
     if (!babyName.trim()) {
       setError("请先填写宝宝姓名");
       return;
@@ -217,16 +235,21 @@ export default function LoginPage() {
     }
   };
 
-  // 体验模式（大创演示用，无需真实手机号）
-  const handleGuestEnter = async () => {
-    setError("");
-    try {
-      await storeRole(role);
-      router.push(role === "parent" ? "/parent" : "/therapist");
-    } catch {
-      router.push(role === "parent" ? "/parent" : "/therapist");
-    }
-  };
+  // 邮箱 magic link 回调：点击邮件链接跳回本页 ?verified=1 → 补建业务用户行 + 同步角色 → 进入对应端
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") !== "1") return;
+    (async () => {
+      const supabase = getSupabaseBrowser();
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+      const savedRole = (localStorage.getItem("avt_role") as Role) || "parent";
+      await ensureUserRow(savedRole);
+      await storeRole(savedRole);
+      router.replace(savedRole === "parent" ? "/parent" : "/therapist");
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-white flex items-center justify-center p-4">
@@ -292,11 +315,8 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 rounded-xl bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-600 disabled:opacity-50 transition-all"
             >
-              {loading ? "登录中..." : "获取验证码 / 测试登录"}
+              {loading ? "登录中..." : "获取短信验证码"}
             </button>
-            <p className="text-[10px] text-gray-400 text-center">
-              （测试模式：输入手机号后点上方按钮即可登录）
-            </p>
             {/* Email magic link 登录（推荐优先路径） */}
             <div>
               <label className="text-xs text-gray-500 block mb-1.5">邮箱（magic link 登录）</label>
@@ -314,21 +334,6 @@ export default function LoginPage() {
               className="w-full py-3 rounded-xl bg-teal-500 text-white font-semibold text-sm hover:bg-teal-600 disabled:opacity-50 transition-all"
             >
               {loading ? "发送中..." : "📧 发送登录链接（邮箱 magic link）"}
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-white px-3 text-xs text-gray-400">或</span>
-              </div>
-            </div>
-            <button
-              onClick={handleGuestEnter}
-              className="w-full py-3 rounded-xl border border-indigo-200 text-indigo-600 font-semibold text-sm hover:bg-indigo-50 transition-all"
-            >
-              体验模式直接进入（演示用）
             </button>
           </div>
         )}

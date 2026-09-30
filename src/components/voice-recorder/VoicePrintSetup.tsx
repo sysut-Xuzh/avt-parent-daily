@@ -187,36 +187,34 @@ export default function VoicePrintSetup({
         )}
 
         <div className="mt-5 flex gap-2">
-          <button
-            onClick={handleSkip}
-            disabled={analyzing || recording}
-            className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-500 text-sm font-medium active:scale-95 transition-all disabled:opacity-50"
-          >
-            跳过
-          </button>
-          {baseline !== null && !recording && !analyzing ? (
+          {baseline === null ? (
+            // 未录音：仅一个次级按钮「稍后录制」，主操作是上方大圆钮录音
             <button
-              onClick={handleRegister}
-              className="flex-[2] py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-bold active:scale-95 transition-all"
+              onClick={handleSkip}
+              disabled={analyzing || recording}
+              className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 text-sm font-medium active:scale-95 transition-all disabled:opacity-50"
             >
-              完成注册
+              稍后录制（先用通用模型）
             </button>
           ) : (
-            <button
-              onClick={handleRegister}
-              disabled={analyzing || recording}
-              className="flex-[2] py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-bold active:scale-95 transition-all disabled:opacity-50"
-            >
-              {hasChildVoice ? "完成注册（通用模型）" : "稍后再说（用通用模型）"}
-            </button>
+            <>
+              <button
+                onClick={resetState}
+                disabled={analyzing}
+                className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium active:scale-95 transition-all disabled:opacity-50"
+              >
+                重录
+              </button>
+              <button
+                onClick={handleRegister}
+                disabled={analyzing}
+                className="flex-[2] py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-bold active:scale-95 transition-all disabled:opacity-50"
+              >
+                {hasChildVoice ? `完成注册（${baseline}Hz）` : "完成注册（通用模型）"}
+              </button>
+            </>
           )}
         </div>
-
-        {(baseline !== null || analyzing || recording) && (
-          <button onClick={resetState} className="mt-2 w-full text-center text-[11px] text-gray-400 underline">
-            重新录制
-          </button>
-        )}
       </motion.div>
     </div>
   );
